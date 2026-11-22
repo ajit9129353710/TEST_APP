@@ -19,31 +19,33 @@ const app = express();
 app.use(helmet());
 
 app.use(
-cors({
-origin: process.env.CLIENT_URL || "http://localhost:5173",
-credentials: true,
-})
+  cors({
+    origin: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
 );
 
 app.use(express.json({ limit: "10kb" }));
 
 const apiLimiter = rateLimit({
-windowMs: 15 * 60 * 1000,
-limit: 100,
-standardHeaders: "draft-8",
-legacyHeaders: false,
-message: {
-message: "Too many requests. Please try again later.",
-},
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    message: "Too many requests. Please try again later.",
+  },
 });
 
 app.use("/api", apiLimiter);
 
 app.get("/", (req, res) => {
-res.status(200).json({
-message: "Mini Online Test App API is Running",
-status: "Success",
-});
+  res.status(200).json({
+    message: "Mini Online Test App API is Running",
+    status: "Success",
+  });
 });
 
 app.use("/api/auth", authRoutes);
@@ -54,31 +56,30 @@ app.use("/api/results", resultRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use((req, res) => {
-res.status(404).json({
-message: "API Route Not Found",
-});
+  res.status(404).json({
+    message: "API Route Not Found",
+  });
 });
 
 app.use((error, req, res, next) => {
-res.status(error.status || 500).json({
-message: error.message || "Internal Server Error",
-});
+  res.status(error.status || 500).json({
+    message: error.message || "Internal Server Error",
+  });
 });
 
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-try {
-await connectDB();
+  try {
+    await connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-} catch (error) {
-console.error("Server startup failed:", error.message);
-process.exit(1);
-}
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
 };
 
 startServer();
